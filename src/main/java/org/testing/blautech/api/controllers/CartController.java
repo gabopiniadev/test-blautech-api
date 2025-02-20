@@ -1,9 +1,13 @@
 package org.testing.blautech.api.controllers;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.testing.blautech.api.models.Cart;
 import org.testing.blautech.api.services.cart.CartService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/cart")
@@ -15,35 +19,49 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<Cart> getCartByUserId(@PathVariable Long userId) {
-        Cart cart = cartService.getCartByUserId(userId);
+    @GetMapping
+    public ResponseEntity<Cart> getCartByUser(@AuthenticationPrincipal UserDetails userDetails) {
+        Cart cart = cartService.getCartByUserEmail(userDetails.getUsername());
         return ResponseEntity.ok(cart);
     }
 
-    @PostMapping("/{userId}/add")
+    @GetMapping("/orders")
+    public ResponseEntity<List<Cart>> getCompletedOrders(@AuthenticationPrincipal UserDetails userDetails) {
+        List<Cart> orders = cartService.getCompletedOrders(userDetails.getUsername());
+        return ResponseEntity.ok(orders);
+    }
+
+    @PostMapping("/add")
     public ResponseEntity<String> addProductToCart(
-            @PathVariable Long userId,
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam Long productId,
             @RequestParam int quantity
     ) {
-        cartService.addProductToCart(userId, productId, quantity);
+        cartService.addProductToCart(userDetails, productId, quantity);
         return ResponseEntity.ok("Product added to cart successfully.");
     }
 
-    @DeleteMapping("/{userId}/remove")
+    @DeleteMapping("/remove")
     public ResponseEntity<String> removeProductFromCart(
-            @PathVariable Long userId,
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam Long productId
     ) {
-        cartService.removeProductFromCart(userId, productId);
+        cartService.removeProductFromCartByEmail(userDetails.getUsername(), productId);
         return ResponseEntity.ok("Product removed from cart successfully.");
     }
 
-    @PostMapping("/{userId}/checkout")
-    public ResponseEntity<String> checkout(@PathVariable Long userId) {
-        cartService.checkout(userId);
+    @GetMapping("/items")
+    public ResponseEntity<Integer> getCartItemCount(@AuthenticationPrincipal UserDetails userDetails) {
+        int itemCount = cartService.getCartItemCount(userDetails.getUsername());
+        return ResponseEntity.ok(itemCount);
+    }
+
+
+    @PostMapping("/checkout")
+    public ResponseEntity<String> checkout(@AuthenticationPrincipal UserDetails userDetails) {
+        cartService.checkoutByEmail(userDetails.getUsername());
         return ResponseEntity.ok("Checkout completed. Cart has been cleared.");
     }
+
 }
 

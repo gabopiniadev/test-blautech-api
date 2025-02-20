@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -25,4 +26,11 @@ public class Cart {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "cart_id")
     private List<CartItem> cartItems;
+
+    @Column(nullable = false)
+    private boolean checkout = false;
+
+    @Column(nullable = false)
+    private LocalDate createdAt = LocalDate.now();
+
 }

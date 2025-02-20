@@ -1,11 +1,21 @@
 package org.testing.blautech.api.services.cart;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.testing.blautech.api.models.Cart;
 
+import java.util.List;
+
 public interface CartService {
-    Cart getCartByUserId(Long userId);
-    void addProductToCart(Long userId, Long productId, int quantity);
-    void removeProductFromCart(Long userId, Long productId);
-    void checkout(Long userId);
+    Cart getCartByUserEmail(String email);
+
+    void addProductToCart(UserDetails userDetails, Long productId, int quantity);
+
+    void removeProductFromCartByEmail(String email, Long productId);
+
+    void checkoutByEmail(String email);
+
+    List<Cart> getCompletedOrders(String email);
+
+    int getCartItemCount(String email);
 }
 

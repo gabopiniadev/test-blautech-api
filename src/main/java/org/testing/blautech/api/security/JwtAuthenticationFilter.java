@@ -37,6 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            logger.debug("Usuario autenticado con JWT para: " + email);
+        } else {
+            logger.debug("No se encontró un token válido para: " + request.getServletPath());
         }
 
         filterChain.doFilter(request, response);
@@ -44,11 +47,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        logger.debug("Request path: " + request.getServletPath());
+        return request.getServletPath().equals("/api/user/login") || request.getServletPath().equals("/api/user/register") || request.getServletPath().equals("/api/products/all") || request.getServletPath().equals("/api/error");
     }
 }
 

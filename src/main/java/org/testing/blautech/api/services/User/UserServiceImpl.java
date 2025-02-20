@@ -1,7 +1,9 @@
 package org.testing.blautech.api.services.User;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.testing.blautech.api.dto.ChangePasswordRequest;
 import org.testing.blautech.api.dto.RegisterUserRequest;
+import org.testing.blautech.api.dto.UpdateUserRequest;
 import org.testing.blautech.api.exception.ResourceNotFoundException;
 import org.testing.blautech.api.models.User;
 import org.testing.blautech.api.repository.UserRepository;
@@ -40,5 +42,29 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
+
+    @Override
+    public void updateUserDetails(String email, UpdateUserRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+
+        user.setName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        userRepository.save(user);
+    }
+
+    @Override
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect.");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
 }
 
